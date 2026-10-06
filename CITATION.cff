@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the archived release."
+type: software
+title: "Scaffolding cooperation: optimal-control theory - core models and analysis"
+authors:
+  - family-names: "Lu"
+    given-names: "Junhao"
+    orcid: "https://orcid.org/0009-0000-1394-7744"
+  - family-names: "Tu"
+    given-names: "Chengyi"
+    affiliation: "School of Economics and Management, Zhejiang Sci-Tech University"
+version: "v1.0.0"
+date-released: "2026-10-07"
+doi: "10.5281/zenodo.23194573"
+url: "https://doi.org/10.5281/zenodo.23194573"
+repository-code: "https://github.com/lunarfairy/scaffolding-cooperation-optimal-control"
+license: "MIT"
+keywords:
+  - cooperation
+  - adaptive networks
+  - optimal control
+  - agent-based model
+  - AI-mediated cooperation
+  - network memory

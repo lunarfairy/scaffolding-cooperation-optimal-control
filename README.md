@@ -1,5 +1,7 @@
 # Scaffolding Cooperation: optimal-control theory
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23194573.svg)](https://doi.org/10.5281/zenodo.23194573)
+
 Core research code for **Network memory separates recruiting from retaining ties to defectors in AI-mediated cooperation**.
 
 The code implements a calibrated network cooperation game, agent-based evaluation of tie-recommendation policies, a differentiable individual-based pair approximation with action-history memory, and bounded optimal control with L-BFGS-B. It also includes the analysis of tie-state sorting in the public human experiment of McKee et al. (2023).
@@ -128,7 +130,11 @@ Seeds and the separation of screening from fresh evaluation remain as specified 
 
 Release validation checked syntax and imports of the computational modules, the original 20,000-game comparison for three reference policies, and depth-3 reduced-model gradients with and without checkpointing. Full experiments, all optimisation starts, and the full human bootstrap were not rerun for this release. Those limited checks do not establish complete reproduction of all paper results.
 
-Please cite the associated manuscript by its title and this repository's version or commit. The initial code version is `v1.0.0`; no manuscript or repository DOI is claimed. For questions, use the [repository issue tracker](https://github.com/lunarfairy/scaffolding-cooperation-optimal-control/issues).
+Please cite the archived code release:
+
+Lu, J., & Tu, C. (2026). *Scaffolding cooperation: optimal-control theory - core models and analysis* (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.23194573
+
+The version DOI identifies the verified `v1.0.0` source archive at commit `2873d43aef9507a720f43690474d10fc3a119d1f`. Citation metadata are also provided in `CITATION.cff`. Please cite the associated manuscript separately by its title until its publication details are available. For questions, use the [repository issue tracker](https://github.com/lunarfairy/scaffolding-cooperation-optimal-control/issues).
 
 ## Licence
 
