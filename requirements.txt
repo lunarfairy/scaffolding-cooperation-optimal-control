@@ -1,0 +1,4 @@
+# Versions used for the local release checks (Python 3.12.4)
+numpy==1.26.4
+scipy==1.13.1
+torch==2.9.1
