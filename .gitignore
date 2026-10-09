@@ -9,9 +9,10 @@ venv/
 .DS_Store
 Thumbs.db
 data/
-results/
+results/*
+!results/behaviour_model_refit.json
+!results/refit_params.json
 src/*.json
-!src/emp_params.json
 !src/oc_starts.json
 !src/confirm.json
 src/*.npy

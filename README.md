@@ -1,14 +1,14 @@
 # Scaffolding Cooperation: optimal-control theory
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23194573.svg)](https://doi.org/10.5281/zenodo.23194573)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23257433.svg)](https://doi.org/10.5281/zenodo.23257433)
 
 Core research code for **Network memory separates recruiting from retaining ties to defectors in AI-mediated cooperation**.
 
-The code implements a calibrated network cooperation game, agent-based evaluation of tie-recommendation policies, a differentiable individual-based pair approximation with action-history memory, and bounded optimal control with L-BFGS-B. It also includes the analysis of tie-state sorting in the public human experiment of McKee et al. (2023).
+The code implements a calibrated network cooperation game, agent-based evaluation of tie-recommendation policies, a differentiable individual-based pair approximation with action-history memory, and bounded optimal control with L-BFGS-B. It also includes the analysis of tie-state sorting in the public human experiment of McKee et al. (2023), an independent behavioural-model refit from all seven experimental conditions, and policy evaluation under that refit.
 
 ## Scope and contents
 
-This repository contains computational methods and their required inputs. The manuscript, submission documents, plotting scripts, precomputed experiment outputs, and third-party human datasets are supplied separately. Simulation drivers generate their outputs when run. The research source files are preserved without changes to models, parameters, seeds, or optimisation logic.
+This repository contains computational methods and their required inputs. The manuscript, submission documents, plotting scripts, precomputed experiment outputs, and third-party human datasets are supplied separately. Simulation drivers generate their outputs when run. Models, parameters, seeds and optimisation logic match the approved manuscript code. The release copy of the fitting entrypoint additionally exports the same fitted coefficients to the simulator-format parameter file required by a downstream driver; this adds file output only. The two small fitted-model records under `results/` are necessary runtime inputs, rather than policy-performance outputs.
 
 | File | Purpose |
 | --- | --- |
@@ -21,7 +21,8 @@ This repository contains computational methods and their required inputs. The ma
 | `src/run_rev_abm.py` | Revised experiments and fresh-game evaluation |
 | `src/run_rev_ipa.py` | L-BFGS-B optimisation, switching functions, and diagnostics |
 | `src/run_rev_abm2.py` | Agent-based evaluation of reduced-model controls |
-| `src/run_emp.py` | Comparisons using the supplied re-estimated behavioural coefficients |
+| `fit_behaviour_model.py` | Pooled behavioural-model fitting and within-condition group bootstrap |
+| `src/run_refit_abm.py` | Screening, fresh-game evaluation and one-step diagnostics under the independently fitted model |
 | `human_data_tie_state.py` | Human tie-state analysis; requires the upstream public CSV files |
 
 ## Installation
@@ -34,7 +35,7 @@ The dependency files pin the versions used for the local release checks. Use Pyt
 python -m pip install -r requirements.txt
 ```
 
-For human-data analysis, also install pandas:
+For human-data analysis and behavioural-model fitting, also install pandas:
 
 ```sh
 python -m pip install -r requirements-human.txt
@@ -44,12 +45,15 @@ PyTorch builds depend on the platform and CUDA installation; consult the [offici
 
 ## Required inputs and parameters
 
-Four small computational inputs are retained in `src/`:
+Five computational inputs are included:
 
-- `emp_params.json`: calibrated coefficients of the re-estimated behavioural model. These are supplied model inputs; fitting the companion study's calibration model is outside this repository's scope.
-- `oc_starts.json`: optimisation initialisation records. The `window`, `tp`, and `adam_old` starts read these records; they are required inputs rather than the final results of this release.
-- `confirm.json`: selected policy configurations used by the final agent-based evaluation; the revision driver can regenerate this file.
-- `theta_draws.npy`: fixed disposition draws for paired accuracy calculations. They can be regenerated with `ipa.draw_theta(64, 16, seed=12345)`.
+- `results/behaviour_model_refit.json`: fitted coefficients, recommendation acceptance rates and bootstrap intervals consumed by `run_refit_abm.py`. It is the independent pooled fit reported by this manuscript: 19,502 decisions, 1,384 participants and 87 groups; estimated responsiveness 0.892366, with bootstrap interval 0.843437–0.937388.
+- `results/refit_params.json`: the same coefficients in the simulator format consumed by the shared `run_rev_abm.py` driver. The fitting entrypoint exports this file after estimating the model.
+- `src/oc_starts.json`: optimisation initialisation records required by the `window`, `tp` and `adam_old` starts.
+- `src/confirm.json`: selected policy configurations used by final agent-based evaluation; the revision driver can regenerate it.
+- `src/theta_draws.npy`: fixed disposition draws for paired accuracy calculations, regenerated with `ipa.draw_theta(64, 16, seed=12345)`.
+
+The full fit records are included because downstream calculations read them at import time. Simulation outputs, screening grids and bootstrap replicate files are generated locally and excluded from version control. The previous release's companion-model inputs and `run_emp.py` have been superseded by the independent refit workflow in this version.
 
 The baseline has 16 players, 15 rounds, initial edge probability 0.3, benefit 0.10, cost 0.05, and initial capital 1.0. Dispositions have mean -0.304 and standard deviation 2.410. The main reduced model uses action-history depth 3. Recommendation controls distinguish additions from deletions and cooperator-cooperator, cooperator-defector, and defector-defector pairs. See each module's docstring for its arguments and environment variables.
 
@@ -124,17 +128,46 @@ python human_data_tie_state.py
 
 The script writes `results/human_tie_state_gaps.csv`, `results/human_tie_state_gaps_round_stratified.csv`, and `results/human_tie_state_by_round.csv`. It uses participant decisions for outcomes and reconstructed bot decisions only for classifying pairs. Human input files are not redistributed in this repository; follow the upstream data's access and reuse terms. The software MIT licence does not relicense those data.
 
+## Independent behavioural-model refit
+
+The six upstream CSV files listed above also provide the inputs for the pooled fit. After installing both dependency files and obtaining those public CSVs, run from the repository root:
+
+```sh
+python fit_behaviour_model.py
+python fit_behaviour_model.py boot 0 200
+python fit_behaviour_model.py combine
+```
+
+The first command writes the point estimate to `results/behaviour_model_refit.json` and simulator-format coefficients to `results/refit_params.json`. Bootstrap commands write group-resampled fits under `results/boot/`; `combine` adds their intervals to the fit record. The 200-replicate bootstrap is a full scientific computation, not an installation check. It can be split into non-overlapping `boot START COUNT` blocks. The model uses 40-point Gauss–Hermite integration and L-BFGS-B, with the participant-disposition mean fixed at -0.304. Running the full fit is optional when using the supplied fitted-model inputs.
+
+For the current paper's re-estimated-model simulations, run the following **from `src/`**:
+
+```sh
+python run_refit_abm.py work screen 0 1
+python run_refit_abm.py combine screen
+python run_refit_abm.py work fresh 0 1
+python run_refit_abm.py combine fresh
+```
+
+These commands run the complete screen and independent fresh-game evaluation, including both endpoints of the responsiveness interval, and write JSON outputs to `results/refit_abm/`. They are expensive. To use multiple workers, replace `0 1` with worker index `I` and worker count `N`, run every `I = 0..N-1` for a stage, and combine only after all workers finish. Screening uses 30,000 games per policy; fresh evaluation uses 200,000. Screening must be combined before fresh evaluation because it generates `finalists.json`. These dedicated outputs provide the current re-estimated-model analyses; the shared revision drivers also retain prerequisite/background calculations.
+
+A small execution check using the supplied fit, rather than the full screen, is:
+
+```sh
+python -c "import run_refit_abm as r; f,m,c=r.run('W1,12',r.K_HAT,500,2024); print('Refit cooperation:',f.mean())"
+```
+
 ## Reproducibility and citation
 
 Seeds and the separation of screening from fresh evaluation remain as specified in the source. The ABM maintains fixed-shape random draws for common-random-number comparisons. Reduced-model calculations use double precision and per-round checkpointing. Full main comparisons use 200,000 fresh games per policy and robustness comparisons use 100,000; short checks use fewer games.
 
-Release validation checked syntax and imports of the computational modules, the original 20,000-game comparison for three reference policies, and depth-3 reduced-model gradients with and without checkpointing. Full experiments, all optimisation starts, and the full human bootstrap were not rerun for this release. Those limited checks do not establish complete reproduction of all paper results.
+Release validation checks syntax and imports, the unchanged published-model reference policies, small re-estimated-model simulations, finite pooled-model likelihood on a small dataset, and the coefficient-export mapping against the supplied fit. These are execution and file-consistency checks. The full 200-replicate fit, all simulation screens and optimisation starts are not rerun for this release.
 
 Please cite the archived code release:
 
-Lu, J., & Tu, C. (2026). *Scaffolding cooperation: optimal-control theory - core models and analysis* (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.23194573
+Lu, J., & Tu, C. (2026). *Scaffolding cooperation: optimal-control theory - core models and analysis* (v1.1.0). Zenodo. https://doi.org/10.5281/zenodo.23257433
 
-The version DOI identifies the verified `v1.0.0` source archive at commit `2873d43aef9507a720f43690474d10fc3a119d1f`. Citation metadata are also provided in `CITATION.cff`. Please cite the associated manuscript separately by its title until its publication details are available. For questions, use the [repository issue tracker](https://github.com/lunarfairy/scaffolding-cooperation-optimal-control/issues).
+The version DOI identifies the `v1.1.0` source archive. The earlier [v1.0.0 archive](https://doi.org/10.5281/zenodo.23194573) remains available; its files have not been replaced. Citation metadata are also provided in `CITATION.cff`. Please cite the associated manuscript separately by its title until its publication details are available. For questions, use the [repository issue tracker](https://github.com/lunarfairy/scaffolding-cooperation-optimal-control/issues).
 
 ## Licence
 

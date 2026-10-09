@@ -39,7 +39,7 @@ INF = 99.0
 
 PUB = dict(R1=af.R1, RL=af.RL, MU_TH=af.MU_TH, SD_TH=af.SD_TH,
            PHI=(af.PHI_DEL_D, af.PHI_DEL_C, af.PHI_ADD_D, af.PHI_ADD_C))
-EMP = json.load(open('emp_params.json'))
+EMP = json.load(open('../results/refit_params.json'))   # re-estimated model of this study (fit_behaviour_model.py)
 
 
 def set_model(model):
