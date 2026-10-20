@@ -4,7 +4,7 @@
         Box-constrained optimisation of the open-loop pair-type controls by L-BFGS-B (scipy) on exact
         autograd gradients, run to convergence (ftol 1e-13, pgtol 1e-8, at most MAXFUN evaluations).
         Starts: half, enc, window (best agent-based window), tp (best two-phase schedule), adam_old (the
-        80-iteration projected-Adam solution of the original submission), r1, r2 (uniform random).
+        80-iteration projected-Adam initialisation), r1, r2 (uniform random).
         Reports J, the projected-gradient (KKT) residual, active-set classification and the history.
   post  Second-order check on the free coordinates (finite-difference Hessian of J restricted to controls
         strictly inside (0, 1)), re-optimisation on two further disposition samples, and evaluation of every
@@ -20,6 +20,7 @@
 Environment: IPA_DEVICE (cuda), IPA_G (32), MAXFUN (300).
 """
 import os, sys, json, time, glob, math
+from pathlib import Path
 import numpy as np
 import torch
 import ipa
@@ -33,6 +34,12 @@ SMALL = os.environ.get('IPA_SMALL', '0') == '1'
 torch.set_num_threads(int(os.environ.get('IPA_THREADS', 4)))
 STARTS = json.load(open('oc_starts.json'))
 EPS = 1e-6
+
+
+def output_path(name):
+    directory = Path("quick_results") if SMALL or G0 < 32 or MAXFUN < 300 else Path(".")
+    directory.mkdir(exist_ok=True)
+    return directory / name
 
 
 def theta(G, seed=12345):
@@ -188,7 +195,7 @@ def part_post():
             J, se = eval_J(r['u'], 15, kappa, 'final')
             out['reseed'].append(dict(kappa=kappa, seed=sd, J_in=r['J'], J_oos=J, J_oos_se=se, u=r['u'], kkt=r['kkt']))
             print('reseed', kappa, sd, round(r['J'], 5), flush=True)
-    json.dump(out, open('ipa_post.json', 'w'))
+    json.dump(out, open(output_path('ipa_post.json'), 'w'))
 
 
 class Recorder:
@@ -225,7 +232,7 @@ def part_costate():
             for i, k in enumerate(kc):
                 out['sweep40'].append(dict(T=T, s=s, kappa=k, final=float(fin[i])))
         print('sweep40', kc, flush=True)
-    json.dump(out, open('ipa_costate.json', 'w'))
+    json.dump(out, open(output_path('ipa_costate.json'), 'w'))
     sw = json.load(open('ipa_sweep.json')) + out['sweep40']
     for T in ([8, 15, 25, 40] if not SMALL else [8]):
         for k in KG:
@@ -246,7 +253,7 @@ def part_costate():
                 out['lam'].append(dict(T=T, kappa=k, policy=pol, s=s, J=float(J), W0=rec.W0, W1=rec.W1, lam0=lam0, lam1=lam1,
                                        g_add=g[:, 1, 0].tolist(), g_del=g[:, 1, 1].tolist()))
                 print('costate', T, k, pol, s, flush=True)
-                json.dump(out, open('ipa_costate.json', 'w'))
+                json.dump(out, open(output_path('ipa_costate.json'), 'w'))
 
 
 def dec_threshold_ctrl(thrA, thrR, th, tau):
@@ -272,11 +279,8 @@ def part_fb2():
         th = m.theta
         ta, td = STARTS[f'final|15|{kappa}']['window']
         inits = {'window': (np.where(np.arange(1, T) <= ta, -12.0, 12.0), np.where(np.arange(1, T) >= td, 12.0, -12.0))}
-        try:
-            fb = json.load(open('ipa_fb.json'))[f'defector_{kappa}']['thr'][0]
-            inits['coupled'] = (np.array(fb), np.array(fb))
-        except Exception:
-            pass
+        fb = json.load(open('ipa_fb.json'))[f'defector_{kappa}']['thr'][0]
+        inits['coupled'] = (np.array(fb), np.array(fb))
         for nm, (a0, r0) in inits.items():
             thrA = torch.tensor(a0, dtype=DT, device=dev).requires_grad_(True)
             thrR = torch.tensor(r0, dtype=DT, device=dev).requires_grad_(True)
@@ -291,7 +295,7 @@ def part_fb2():
             out.append(dict(kappa=kappa, init=nm, thrA=thrA.detach().cpu().numpy().tolist(),
                             thrR=thrR.detach().cpu().numpy().tolist(), J_soft=hist[-1], J_hard=Jh, hist=hist))
             print('fb2', kappa, nm, round(hist[-1], 4), round(Jh, 4), flush=True)
-            json.dump(out, open('ipa_fb2.json', 'w'))
+            json.dump(out, open(output_path('ipa_fb2.json'), 'w'))
 
 
 def part_gradbases():
@@ -307,7 +311,7 @@ def part_gradbases():
         g, = torch.autograd.grad(J, ut)
         out.append(dict(kappa=kappa, base=nm, J=float(J), grad=g.cpu().numpy().tolist()))
         print('gradbase', nm, flush=True)
-    json.dump(out, open('ipa_gradbases.json', 'w'))
+    json.dump(out, open(output_path('ipa_gradbases.json'), 'w'))
 
 
 if __name__ == '__main__':
@@ -317,7 +321,7 @@ if __name__ == '__main__':
         obj, T, kappa, start = sys.argv[2], int(sys.argv[3]), float(sys.argv[4]), sys.argv[5]
         depth = int(sys.argv[6]) if len(sys.argv) > 6 else 3
         r = run_oc(obj, T, kappa, start, depth=depth)
-        json.dump(r, open(f'oc_{obj}_{T}_{kappa}_{start}_d{depth}.json', 'w'))
+        json.dump(r, open(output_path(f'oc_{obj}_{T}_{kappa}_{start}_d{depth}.json'), 'w'))
         print('oc', obj, T, kappa, start, depth, round(r['J0'], 5), '->', round(r['J'], 6), r['nev'], r['kkt']['res_inf'], flush=True)
     else:
         {'post': part_post, 'costate': part_costate, 'fb2': part_fb2, 'gradbases': part_gradbases}[part]()

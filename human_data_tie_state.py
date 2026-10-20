@@ -1,10 +1,10 @@
-"""Human-data analysis of tie state (main-text Fig. 5, Supplementary Table S11).
+"""Human-data analysis of tie state (Fig. 5).
 
 Uses the public node- and edge-level files of McKee et al. (2023), https://osf.io/8ahkg (CC-BY 4.0),
-extracted to data/osf by prepare_data.py. Writes results/human_tie_state_gaps.csv,
+placed in data/osf/. Writes results/human_tie_state_gaps.csv,
 results/human_tie_state_gaps_round_stratified.csv and results/human_tie_state_by_round.csv.
 This file is an ordered export of the analysis steps used for the manuscript.
-Run from the 06_code directory: python human_data_tie_state.py
+Run from the repository root: python human_data_tie_state.py
 """
 import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))

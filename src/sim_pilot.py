@@ -151,7 +151,7 @@ PLANNERS = {
 
 
 # ---------------- one game ----------------
-def play(planner_name, rng, n=16, p=0.3, kappa=1.0, w_imit=0.0, temp=0.1, budget=None, route='random', T=T, behaviour='fitted'):
+def play(planner_name, rng, n=16, p=0.3, kappa=1.0, w_imit=0.0, temp=0.1, budget=None, route='random', T=T):
     """kappa: responsiveness of last-round defectors to neighbourhood cooperation (1 = paper model).
     w_imit: probability that a player uses payoff-biased (Fermi) imitation instead of the fitted rule."""
     planner = PLANNERS[planner_name]
@@ -172,10 +172,6 @@ def play(planner_name, rng, n=16, p=0.3, kappa=1.0, w_imit=0.0, temp=0.1, budget
             xr = np.where(deg > 0, xn / np.maximum(deg, 1), 0.0)
             k = np.where(a_prev == 1, 1.0, kappa)
             pc = logistic(RL[0] + RL[1] * deg + k * (RL[2] * xn + RL[3] * xr) + theta)
-            if behaviour == 'unanimity':           # stylised LLM-elicited rule (see llm pilot)
-                unan = (deg > 0) & (xn == deg)
-                pc = np.where(unan, np.where(a_prev == 1, 0.9, 0.7), 0.02)
-                pc = np.where(deg == 0, 0.5, pc)
         a = (rng.random(n) < pc).astype(int)
         if t > 1 and w_imit > 0:
             use = rng.random(n) < w_imit

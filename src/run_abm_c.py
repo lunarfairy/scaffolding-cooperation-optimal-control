@@ -287,8 +287,8 @@ def t_pairacc(a):
     reps = 500 if not SMALL else 5
     rng = np.random.default_rng(seed)
     fin, coop = [], []
-    for b in range(reps // 25):
-        thb = np.tile(th, (25, 1))
+    for b in range(0, reps, 25):
+        thb = np.tile(th, (min(25, reps - b), 1))
         r = af.simulate(af.typed(np.array(u)), thb.shape[0], rng, T=15, kappa=kappa, theta=thb)
         fin.append(r['final']); coop.append(r['coop'])
     fin = np.concatenate(fin); coop = np.concatenate(coop)

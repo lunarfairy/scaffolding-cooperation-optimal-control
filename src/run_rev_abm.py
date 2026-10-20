@@ -1,7 +1,7 @@
-"""Revision experiments in the agent-based model (ABM).
+"""Agent-based experiments and policy comparisons.
 
 Stage 1 (screening and diagnostics)
-  grid      : recruit/retain windows under robustness conditions, the re-estimated model at kappa = 0.808 / 0.910,
+  grid      : recruit/retain windows under robustness conditions, the re-estimated model at its kappa interval endpoints,
               the nested decoupled disposition-threshold family (oracle) and a widened coupled linear-threshold family
   needle1   : one-sided perturbations of the C-D recruitment (u+) and deletion (u-) controls, one round at a time,
               with common random numbers (CRN)
@@ -11,9 +11,8 @@ Stage 1 (screening and diagnostics)
   capacc    : paired-disposition ABM with and without the capital constraint (for the reduced-model error budget)
   ref       : vectorised simulator versus the loop-based reference simulator (sim_pilot.py), per planner
   myopic    : myopic threshold under the re-estimated model
-Stage 2 (selection-free confirmation)
-  reeval    : finalists of every screening grid re-simulated on fresh seeds (never used for selection), all policies
-              of a setting on the same seeds (CRN) so that paired differences have small standard errors.
+Stage 2 (fresh-game evaluation)
+  reeval    : screening finalists evaluated on fresh games, with common random numbers within each setting.
 
 Output: rev_abm_results.json (summaries only).  Environment: NPROC, SMALL=1 for a smoke test.
 """
@@ -39,6 +38,7 @@ INF = 99.0
 
 PUB = dict(R1=af.R1, RL=af.RL, MU_TH=af.MU_TH, SD_TH=af.SD_TH,
            PHI=(af.PHI_DEL_D, af.PHI_DEL_C, af.PHI_ADD_D, af.PHI_ADD_C))
+FIT = json.load(open('../results/behaviour_model_refit.json'))
 EMP = json.load(open('../results/refit_params.json'))   # re-estimated model of this study (fit_behaviour_model.py)
 
 
@@ -307,7 +307,7 @@ if __name__ == '__main__':
                 for td in (range(1, 16) if not SMALL else [1, 5, 15]):
                     tasks.append(('grid', 'robust', st, f'W{ta},{td}', W(15, ta, td), seed, NSCREEN)); seed += 1
     # re-estimated model at the ends of the kappa CI
-    for k in [0.808, 0.910]:
+    for k in FIT['boot_95']['kappa']:
         st = dict(model='emp', cond='base', kappa=k, T=15)
         for ta in (range(15) if not SMALL else [0, 4]):
             for td in (range(1, 16) if not SMALL else [5, 15]):
@@ -529,4 +529,14 @@ if __name__ == '__main__':
         s.update(tag=tag, setting=st, specs={nm: sp_ for nm, sp_ in pols if sp_['kind'] != 'typed'})
         out['reeval'].append(s)
     json.dump(out, open('rev_abm_results.json', 'w'))
+    confirm = {}
+    for row in out['reeval']:
+        if row['tag'] != 'main':
+            continue
+        pol = row['policies']
+        window = max((n for n in pol if n.startswith('W') and '_enc' not in n), key=lambda n: pol[n]['final'])
+        tp = max((n for n in pol if n.startswith('P')), key=lambda n: pol[n]['final'])
+        st = row['setting']
+        confirm[f"{st['kappa']}|{st['T']}"] = dict(window=list(map(int, window[1:].split(','))), tp=int(tp[1:]))
+    json.dump(confirm, open('confirm.json', 'w'), indent=2)
     print('ALL DONE', round(time.time() - T0, 1), flush=True)

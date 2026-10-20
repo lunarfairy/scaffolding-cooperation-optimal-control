@@ -1,6 +1,6 @@
 """Re-estimation of the behaviour model from all seven conditions of McKee et al. (2023).
 
-Model (same functional form as the published simulator; main-text Eq. 2):
+Model (same functional form as the published simulator; Methods: Behavioural model):
   round 1:      logit P(C) = b00 + b01 * theta_i
   rounds t>=2:  logit P(C) = beta0 + beta_s k_i + kappa_i (beta_n x_n,i + beta_r x_r,i) + theta_i,
                 kappa_i = 1 if i cooperated in round t-1, kappa otherwise,
@@ -11,7 +11,7 @@ made infeasible (capital after round t-1 below c * k_i) are excluded. The margin
 40-point Gauss-Hermite quadrature and maximised with L-BFGS-B. A group bootstrap (resampling groups within the
 seven conditions) gives the interval for kappa. Acceptance probabilities are the empirical acceptance rates of
 add and delete recommendations by referent action in the conditions with recorded responses.
-Usage (from 06_code): see the end of this file.
+Usage (from the repository root): see the end of this file.
 """
 import os, sys, json
 from itertools import combinations

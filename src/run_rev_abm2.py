@@ -23,8 +23,10 @@ def rounded(u):
 if __name__ == '__main__':
     T0 = time.time()
     oc = [json.load(open(f)) for f in sorted(glob.glob('oc_*_d*.json'))]
+    if not oc:
+        raise FileNotFoundError('Run run_optimisations.py before run_rev_abm2.py.')
     conf = json.load(open('confirm.json'))          # {"kappa|T": {"window": [ta, td], "tp": s}}
-    fb2 = json.load(open('ipa_fb2.json')) if os.path.exists('ipa_fb2.json') else []
+    fb2 = json.load(open('ipa_fb2.json'))
     sets = []
     keys = sorted(set((r['obj'], r['T'], r['kappa']) for r in oc if r['depth'] == 3))
     for obj, T, k in keys:

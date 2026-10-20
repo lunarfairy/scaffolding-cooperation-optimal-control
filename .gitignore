@@ -18,3 +18,6 @@ src/*.json
 src/*.npy
 !src/theta_draws.npy
 src/log_*.txt
+src/quick_results/
+figures/*.pdf
+figures/*.png

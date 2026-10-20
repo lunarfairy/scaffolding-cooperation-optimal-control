@@ -6,7 +6,7 @@ of its bootstrap interval; common random numbers within each setting. Myopic one
 (pi_0) and conciliation (pi_14) trajectories at the estimated kappa.
 Stage 2 (fresh): finalists (best five windows by final cooperation, best two by mean cooperation, best three
 two-phase schedules, exclusion, conciliation, encouragement) on 200,000 fresh games (10 chunks of 20,000), CRN.
-Usage (from 06_code/src, after fit_behaviour_model.py):
+Usage (from src/, using results/behaviour_model_refit.json):
    python run_refit_abm.py work STAGE I N     worker I of N for stage 'screen' or 'fresh'
    python run_refit_abm.py combine STAGE       merge worker outputs (combine screen before running fresh)
 Outputs in ../results/refit_abm/.
