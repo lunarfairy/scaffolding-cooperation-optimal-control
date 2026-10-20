@@ -90,8 +90,4 @@ The bootstrap resamples groups within conditions. Refit simulations use the poin
 
 ## Citation and licence
 
-Software: [MIT](LICENSE). The archived core-code release is:
-
-Lu, J., & Tu, C. (2026). *Scaffolding cooperation: optimal-control theory – core models and analysis* (v1.1.0). [Zenodo, doi:10.5281/zenodo.23257433](https://doi.org/10.5281/zenodo.23257433).
-
-The DOI identifies v1.1.0; the figure workflow and subsequent fixes are available on the current GitHub branch. Citation metadata for the archived release are in `CITATION.cff`.
+Software: [MIT](LICENSE). Citation metadata for this repository are in `CITATION.cff`.

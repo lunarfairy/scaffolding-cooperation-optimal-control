@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite the archived release."
+message: "If you use this software, please cite this repository."
 type: software
 title: "Scaffolding cooperation: optimal-control theory - core models and analysis"
 authors:
@@ -9,10 +9,7 @@ authors:
   - family-names: "Tu"
     given-names: "Chengyi"
     affiliation: "School of Economics and Management, Zhejiang Sci-Tech University"
-version: "v1.1.0"
-date-released: "2026-10-09"
-doi: "10.5281/zenodo.23257433"
-url: "https://doi.org/10.5281/zenodo.23257433"
+url: "https://github.com/lunarfairy/scaffolding-cooperation-optimal-control"
 repository-code: "https://github.com/lunarfairy/scaffolding-cooperation-optimal-control"
 license: "MIT"
 keywords:
