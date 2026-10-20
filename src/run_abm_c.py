@@ -305,13 +305,6 @@ if __name__ == '__main__':
     t0 = time.time()
     tasks = []
     seed = 100
-    # IPA-optimal controls
-    ocrecs = []
-    for f in sorted(glob.glob('ipa_oc_*.json')):
-        ocrecs += json.load(open(f))
-    for rec in ocrecs:
-        for rounded in (False, True):
-            tasks.append(('eval_oc', rec, rounded, seed)); seed += 1
     # feedback grid
     c0s = np.arange(-4, 3.01, 0.5) if not SMALL else [-1, 0]
     c1s = np.arange(-2, 6.01, 1.0) if not SMALL else [0, 2]
@@ -378,6 +371,13 @@ if __name__ == '__main__':
         for kappa in [0.5, 0.75, 1.0]:
             for s in range(15):
                 tasks.append(('robust', kappa, 15, s, cond, seed)); seed += 1
+    # Optional projected-Adam evaluations follow the main seed allocation.
+    ocrecs = []
+    for f in sorted(glob.glob('ipa_oc_*.json')):
+        ocrecs += json.load(open(f))
+    for rec in ocrecs:
+        for rounded in (False, True):
+            tasks.append(('eval_oc', rec, rounded, seed)); seed += 1
     parts = os.environ.get('C_PARTS', '')
     if parts:
         keep = set(parts.split(','))

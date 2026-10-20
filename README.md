@@ -36,8 +36,6 @@ python run_optimisations.py
 cd src
 python run_rev_ipa.py costate
 python run_rev_ipa.py fb2
-python run_rev_ipa.py gradbases
-python run_rev_ipa.py post
 python run_rev_abm2.py
 python run_refit_abm.py work screen 0 1
 python run_refit_abm.py combine screen
@@ -50,6 +48,8 @@ python figures/make_all_figures.py
 ```
 
 `run_optimisations.py` runs the settings in `optimisation_tasks.json`. `run_rev_abm.py` refreshes `src/confirm.json`; `prepare_figures.py` assembles simulation outputs and human-data summaries into `figure_data/`. Use `--output PATH` to retain the supplied figure inputs. Optimisation records are selected by their reduced-model objective, before their ABM performance is compared.
+
+Optional gradient and optimality diagnostics: run `python run_rev_ipa.py gradbases` and `python run_rev_ipa.py post` from `src/` after optimisation.
 
 Reduced-size runs of `run_rev_ipa.py` (`IPA_SMALL=1`, `IPA_G<32` or `MAXFUN<300`) write to `src/quick_results/`. Other drivers retain their documented output paths. Seeds are specified in the source; numerical results can vary with the computational environment.
 
